@@ -1,0 +1,25 @@
+1.Phân biệt kiểu dữ liệu nguyên thủy và object
+Primitive
+	Được cung cấp sẵn trong các ngôn ngữ lập trình
+	Gắn giá trị trực tiếp
+	Có tính tham trị, chứa dữ liệu trong chính vùng nhớ của biến	
+
+Object
+	Có thể do người dùng định nghĩa
+	Khai báo bằng từ khóa new
+	Chứa trong heap
+	Có tính tham chiếu, tham chiếu đến địa chỉ vùng nhớ.
+
+2.Có thể chuyển đổi giữa 2 kiểu dữ liệu không?
+Có thể chuyển đổi giữa 2 kiểu dữ liệu. Quá trình này gọi là autoboxing và unboxing.
+Autoboxing: chuyển từ primitive về object. 
+Unboxing: đưa từ kiểu tham chiếu về kiểu tham trị
+
+3.Có thể so sánh hai kiểu dữ liệu này với nhau không?
+Có thể so sánh 2 kiểu dữ liệu này với nhau.
+4.Giá trị khi khởi tạo biến với hai loại kiểu dữ liệu này là gì?
+Primitive: int, double, float: mặc định là 0
+           Boolean: false
+           Char: null
+Object: null
+
