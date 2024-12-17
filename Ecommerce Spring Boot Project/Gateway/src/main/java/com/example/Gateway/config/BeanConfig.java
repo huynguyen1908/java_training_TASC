@@ -27,6 +27,8 @@ public class BeanConfig {
                         .uri("lb://USER-SERVICE/"))
                 .route("PRODUCT-SERVICE", r -> r.path("/api/v1/products/**", "/api/v1/carts/**", "/api/v1/categories/**")
                         .uri("lb://PRODUCT-SERVICE/"))
+                .route("ORDER-SERVICE", r -> r.path("/api/v1/orders/**")
+                        .uri("lb://ORDER-SERVICE/"))
                 .build();
     }
 //

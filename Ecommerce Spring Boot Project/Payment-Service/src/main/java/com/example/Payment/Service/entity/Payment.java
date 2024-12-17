@@ -18,7 +18,7 @@ public class Payment {
     private String paymentMethod;
     private String status;
     private LocalDateTime date;
-    private String transaction;
+    private String transactionId;
 
     @Column(name = "order_id")
     private String orderId;

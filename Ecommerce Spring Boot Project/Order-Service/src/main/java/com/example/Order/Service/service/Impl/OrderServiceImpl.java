@@ -1,8 +1,10 @@
 package com.example.Order.Service.service.Impl;
 
 import com.example.Order.Service.client.PaymentServiceClient;
+import com.example.Order.Service.dto.request.OrderDTO;
 import com.example.Order.Service.dto.request.PaymentRequest;
 import com.example.Order.Service.entity.Order;
+import com.example.Order.Service.mapper.OrderMapper;
 import com.example.Order.Service.repository.OrderRepository;
 import com.example.Order.Service.service.OrderService;
 import jakarta.transaction.Transactional;
@@ -17,26 +19,18 @@ public class OrderServiceImpl implements OrderService {
     @Autowired
     OrderRepository orderRepository;
 
+    @Autowired
+    OrderMapper orderMapper;
+
+    @Autowired
+    PaymentServiceClient paymentServiceClient;
+
     @Override
     @Transactional
-    public Order createdOrder(Order order){
-        order.setStatus("PENDING");
-        order.setOrderDate(LocalDateTime.now());
-        Order savedOrder = orderRepository.save(order);
-
-        // Tạo yêu cầu thanh toán và gọi đến Payment Service qua Feign Client
-        PaymentRequest paymentRequest = new PaymentRequest();
-        paymentRequest.setOrderId(savedOrder.getOrderId());
-        paymentRequest.setAmount(order.getDiscount());
-        paymentRequest.setPaymentMethod("Credit Card");
-
-        String paymentStatus = PaymentServiceClient.createPayment(paymentRequest);
-
-        if ("SUCCESS".equals(paymentStatus)) {
-            savedOrder.setStatus("CONFIRMED");
-        } else {
-            savedOrder.setStatus("CANCELLED");
-        }
+    public Order createdOrder(OrderDTO orderDTO){
+        orderDTO.setStatus("PENDING");
+        orderDTO.setOrderDate(LocalDateTime.now());
+        Order savedOrder = orderRepository.save(orderMapper.toOrder(orderDTO));
 
         return orderRepository.save(savedOrder);
     }

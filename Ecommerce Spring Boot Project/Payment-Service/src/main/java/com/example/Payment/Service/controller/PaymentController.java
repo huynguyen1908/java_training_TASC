@@ -1,8 +1,10 @@
 package com.example.Payment.Service.controller;
 
+import com.example.Payment.Service.dto.request.CreatePaymentRequest;
 import com.example.Payment.Service.entity.Payment;
 import com.example.Payment.Service.service.PaymentService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -15,7 +17,7 @@ public class PaymentController {
     private PaymentService paymentService;
 
     @PostMapping("/create")
-    public String createPayment(@RequestBody Payment payment) {
-        return paymentService.createPayment(payment);
+    public ResponseEntity<?> createPayment(@RequestBody CreatePaymentRequest createPaymentRequest) {
+        return ResponseEntity.ok(paymentService.createPayment(createPaymentRequest));
     }
 }
