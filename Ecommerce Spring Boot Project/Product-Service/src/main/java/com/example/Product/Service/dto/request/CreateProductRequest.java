@@ -1,5 +1,9 @@
 package com.example.Product.Service.dto.request;
 
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Positive;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -7,20 +11,20 @@ import java.time.LocalDateTime;
 import java.util.Date;
 
 @Data
-@Builder
-@AllArgsConstructor
-@NoArgsConstructor
-@Getter
-@Setter
-@FieldDefaults(level = AccessLevel.PRIVATE)
 public class CreateProductRequest {
+    @NotBlank(message = "Product name is required")
     private String name;
     private String description;
     private String image;
+
+    @NotBlank(message = "Brand is required")
     private String brand;
-    private double importPrice;
+
+    @Positive(message = "Price must be greater than 0")
     private double price;
-    private double discountPrice;
+
+    @Min(value = 0, message = "Discount must be between 0 and 100")
+    @Max(value = 100, message = "Discount must be between 0 and 100")
     private int discount;
     private LocalDateTime createdDate;
     private String createdBy;

@@ -3,6 +3,8 @@ package com.example.Product.Service.service.interfaces;
 import com.example.Product.Service.dto.request.CreateCategoryRequest;
 import com.example.Product.Service.dto.request.UpdateCategoryRequest;
 import com.example.Product.Service.dto.request.UpdateProductRequest;
+import com.example.Product.Service.dto.response.CategoryDTO;
+import com.example.Product.Service.dto.response.ProductDTO;
 import com.example.Product.Service.entity.Category;
 import com.example.Product.Service.entity.Product;
 import com.example.Product.Service.repository.CategoryRepository;
@@ -11,21 +13,20 @@ import java.util.List;
 import java.util.Optional;
 
 public interface CategoryService {
-    List<Category> getAllCategories();
+    List<CategoryDTO> getAllCategories();
 
-    Optional<Category> getCategoryById(String categoryId);
+    List<ProductDTO> getProductsByCategory(String categoryId);
 
-    Category createCategory(CreateCategoryRequest request);
+    CategoryDTO createCategory(CreateCategoryRequest request);
 
+    CategoryDTO getCategoryById(String categoryId);
 
-    Category updateCategory(String categoryId, UpdateCategoryRequest request);
+    CategoryDTO editCategory(String categoryId, CreateCategoryRequest request);
 
-    void deleteCategory(String categoryId);
-    //void addProductToCategoryByName(String categoryId,String productName);
+//    void deleteCategory(String categoryId);
 
-    void addProductToCategoryById(String categoryId, Product product);
+    CategoryDTO addProductToCategory(String categoryId, String productId);
 
-    void removeProductOutOfCategory(String categoryId, Product product);
+//    void removeProductOutOfCategory(String categoryId, Product product);
 
-    List<Product> getProductListCategory(String categoryId);
 }

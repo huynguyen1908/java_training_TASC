@@ -1,69 +1,59 @@
 package com.example.Product.Service.controller;
 
 import com.example.Product.Service.dto.request.CreateCategoryRequest;
-import com.example.Product.Service.dto.request.UpdateCategoryRequest;
-import com.example.Product.Service.entity.Category;
+import com.example.Product.Service.dto.response.CategoryDTO;
+import com.example.Product.Service.dto.response.ProductDTO;
 import com.example.Product.Service.entity.Product;
-import com.example.Product.Service.service.impl.CategoryServiceImpl;
 import com.example.Product.Service.service.interfaces.CategoryService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.repository.query.Param;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/categories")
+@RequestMapping("/api/category")
 public class CategoryController {
 
     @Autowired
     private CategoryService categoryService;
 
-    @GetMapping("/category-list")
-    public ResponseEntity<List<Category>> getAllCategories() {
-        categoryService.getAllCategories();
-        return ResponseEntity.ok().build();
+    @GetMapping
+    public ResponseEntity<List<CategoryDTO>> getAllCategories() {
+        return ResponseEntity.ok(categoryService.getAllCategories());
     }
 
-    @GetMapping("/get/{id}")
-    public ResponseEntity<Category> getCategoryById(@PathVariable String categoryId) {
-        categoryService.getCategoryById(categoryId);
-        return ResponseEntity.ok().build();
+    @GetMapping("/{categoryId}/products")
+    public ResponseEntity<List<ProductDTO>> getProductsByCategory(@PathVariable String categoryId) {
+        return ResponseEntity.ok(categoryService.getProductsByCategory(categoryId));
     }
 
-    @PostMapping("/create-category")
-    public ResponseEntity<Category> createCategory(@RequestBody CreateCategoryRequest request) {
-        categoryService.createCategory(request);
-        return ResponseEntity.ok().build();
+    @PostMapping("/create")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<CategoryDTO> createCategory(@RequestBody CreateCategoryRequest request) {
+        return new ResponseEntity<>(categoryService.createCategory(request), HttpStatus.CREATED);
     }
 
-    @PutMapping("/update/{id}")
-    public ResponseEntity<Category> updateCategory(@PathVariable String categoryId, @RequestBody UpdateCategoryRequest request) {
-        return ResponseEntity.ok(categoryService.updateCategory(categoryId, request));
+    @PostMapping("/{categoryId}/add-product/{productId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<CategoryDTO> addProductToCategory(
+            @PathVariable String categoryId,
+            @PathVariable String productId
+    ) {
+        return ResponseEntity.ok(categoryService.addProductToCategory(categoryId, productId));
     }
 
-    @DeleteMapping("/delete/{id}")
-    public ResponseEntity<Void> deleteCategory(@PathVariable String categoryId) {
-        categoryService.deleteCategory(categoryId);
-        return ResponseEntity.ok().build();
+    @GetMapping("/{categoryId}")
+    public ResponseEntity<CategoryDTO> getCategoryById(@PathVariable String categoryId) {
+        return ResponseEntity.ok(categoryService.getCategoryById(categoryId));
     }
 
-    @PostMapping("/add-product/{categoryId}")
-    public ResponseEntity<Void> addProductToCategory(@PathVariable String categoryId, @RequestBody Product product) {
-        categoryService.addProductToCategoryById(categoryId, product);
-        return ResponseEntity.ok().build();
-    }
-
-    @DeleteMapping("/remove-product")
-    public ResponseEntity<Void> removeProductOutOfCategory(@PathVariable String categoryId, @RequestBody Product product) {
-        categoryService.removeProductOutOfCategory(categoryId, product);
-        return ResponseEntity.ok().build();
-    }
-
-    @GetMapping("/get-product")
-    public ResponseEntity<List<Product>> getProductList(@RequestParam String categoryId) {
-        List<Product> products = categoryService.getProductListCategory(categoryId);
-        return ResponseEntity.ok(products);
+    @PutMapping("/edit/{categoryId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<CategoryDTO> editCategory(@PathVariable String categoryId,
+                                                    @RequestBody CreateCategoryRequest request) {
+        return ResponseEntity.ok(categoryService.editCategory(categoryId, request));
     }
 }

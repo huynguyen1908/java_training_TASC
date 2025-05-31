@@ -1,22 +1,18 @@
 package com.example.Product.Service.service.interfaces;
 
-import com.example.Product.Service.dto.request.AddToCartRequest;
-import com.example.Product.Service.dto.request.CreateCartRequest;
-import com.example.Product.Service.dto.request.RemoveFromCartRequest;
-import com.example.Product.Service.entity.Cart;
-import com.example.Product.Service.entity.Product;
-
+import com.example.Product.Service.dto.response.CartDTO;
+import com.example.Product.Service.dto.response.CartItemDTO;
 import java.util.List;
 
 public interface CartService {
 
-    Cart createCart(String userId);
+    CartDTO createCart(String userId);
 
-    void addProductToCart(String cartId, Product product);
+    void addProductToCart(String cartId, String productId, int quantity);
 
-    void removeProductFromCart(String cartId, Product product);
+    void removeProductFromCart(String cartItemId);
 
-    List<Product> getProductListCart(String cartId);
+    List<CartItemDTO> getCartItems(String cartId);
 
-    void clearCart(String cartId);
+    CartDTO updateCartItemQuantity(String cartItemId, int quantity);
 }

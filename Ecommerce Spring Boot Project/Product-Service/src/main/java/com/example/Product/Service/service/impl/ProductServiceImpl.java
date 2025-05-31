@@ -3,6 +3,7 @@ package com.example.Product.Service.service.impl;
 import com.example.Product.Service.dto.request.CreateProductRequest;
 import com.example.Product.Service.dto.request.UpdateProductRequest;
 //import com.example.Product.Service.entity.Category;
+import com.example.Product.Service.dto.response.ProductDTO;
 import com.example.Product.Service.entity.Product;
 import com.example.Product.Service.mapper.ProductMapper;
 //import com.example.Product.Service.repository.CategoryRepository;
@@ -22,34 +23,42 @@ public class ProductServiceImpl implements ProductService {
     @Autowired
     private ProductMapper productMapper;
 
-    //@Autowired
-    //private CategoryRepository categoryRepository;
     @Override
     public void createProduct(CreateProductRequest productRequest) {
-        Product product = productMapper.toProduct(productRequest);
+        Product product = productMapper.fromCreateRequest(productRequest);
         productRepository.save(product);
     }
 
     @Override
-    public List<Product> getAllProducts() {
-        return productRepository.findAll();
+    public List<ProductDTO> getProductList() {
+        return productRepository.findAll()
+                .stream()
+                .map(productMapper::toDTO)
+                .toList();
     }
 
     @Override
-    public Optional<Product> getProductById(String productId) {
-        return Optional.ofNullable(productRepository.findById(productId).orElseThrow(() -> new RuntimeException("Product not found")));
+    public ProductDTO getProductById(String productId) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new RuntimeException("Product not found"));
+        return productMapper.toDTO(product);
     }
 
     @Override
-    public void deleteProduct(String id) {
-        productRepository.deleteById(id);
+    public void deleteProduct(String productId) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new RuntimeException("Product not found"));
+        productRepository.deleteById(productId);
     }
 
     @Override
-    public Product updateProduct(String id, UpdateProductRequest request) {
-        Product product = productRepository.findById(id).orElseThrow(() -> new RuntimeException("Product not found"));
-        product = productMapper.toUpdatedProduct(request);
-        return productRepository.save(product);
+    public ProductDTO editProduct (String productId, UpdateProductRequest request) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new RuntimeException("Product not found"));
+        productMapper.updateProductFromRequest(request, product);
+        productRepository.save(product);
+
+        return productMapper.toDTO(product);
     }
 
 }

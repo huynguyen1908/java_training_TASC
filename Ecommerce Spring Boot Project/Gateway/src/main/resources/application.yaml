@@ -13,10 +13,13 @@ spring:
           uri: lb://USER-SERVICE
           predicates:
             - Path=/api/user/**
+            - Path=/api/auth/**
         - id: USER-SERVICE
           uri: lb://PRODUCT-SERVICE
           predicates:
-            - Path=/api/v1/products/**
+            - Path=/api/product/**
+            - Path="/api/cart/**"
+            - Path="/api/category/**"
         - id: ORDER-SERVICE
           uri: lb://ORDER-SERVICE
           predicates:
@@ -31,15 +34,3 @@ eureka:
     service-url:
       defaultZone: http://localhost:8761/eureka/
 
-
-
-#spring.application.name=api-gateway
-#
-#server.port=8880
-#
-#eureka.client.service-url.defaultZone=http://localhost:8761/eureka/
-#
-#spring.cloud.gateway.discovery.locator.enabled=true
-#spring.cloud.gateway.routes[0].id=user-service
-#spring.cloud.gateway.routes[0].uri=lb://user-service
-#spring.cloud.gateway.routes[0].predicates[0]=Path=/api/user/**

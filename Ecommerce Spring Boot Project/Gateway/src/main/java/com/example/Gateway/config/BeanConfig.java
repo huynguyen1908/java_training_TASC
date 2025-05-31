@@ -22,10 +22,9 @@ public class BeanConfig {
     @Bean
     public RouteLocator gatewayRoutes(RouteLocatorBuilder builder) {
         return builder.routes()
-                .route("USER-SERVICE",r -> r.path("/api/user/**")
-                        //.filters(f -> f.rewritePath("/api/user/(?<remains>.*)", "/${remains}"))
+                .route("USER-SERVICE",r -> r.path("/api/user/**", "/api/auth/**")
                         .uri("lb://USER-SERVICE/"))
-                .route("PRODUCT-SERVICE", r -> r.path("/api/v1/products/**", "/api/v1/carts/**", "/api/v1/categories/**")
+                .route("PRODUCT-SERVICE", r -> r.path("/api/product/**", "/api/cart/**", "/api/category/**")
                         .uri("lb://PRODUCT-SERVICE/"))
                 .route("ORDER-SERVICE", r -> r.path("/api/v1/orders/**")
                         .uri("lb://ORDER-SERVICE/"))

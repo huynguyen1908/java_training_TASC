@@ -10,16 +10,11 @@ import lombok.experimental.FieldDefaults;
 import java.time.LocalDateTime;
 import java.util.List;
 
-@Setter
-@Getter
-@Builder
-@AllArgsConstructor
-@NoArgsConstructor
+@Data
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class CreateCategoryRequest {
     String name;
     String description;
     LocalDateTime createdDate;
     String createdBy;
-
 }

@@ -1,8 +1,14 @@
 package com.example.Product.Service.service.impl;
 
+import com.example.Product.Service.client.UserClient;
+import com.example.Product.Service.dto.response.CartDTO;
+import com.example.Product.Service.dto.response.CartItemDTO;
 import com.example.Product.Service.entity.Cart;
+import com.example.Product.Service.entity.CartItems;
 import com.example.Product.Service.entity.Product;
 
+import com.example.Product.Service.mapper.CartMapper;
+import com.example.Product.Service.repository.CartItemsRepository;
 import com.example.Product.Service.repository.CartRepository;
 import com.example.Product.Service.repository.ProductRepository;
 import com.example.Product.Service.service.interfaces.CartService;
@@ -11,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class CartServiceImpl implements CartService {
@@ -18,61 +25,62 @@ public class CartServiceImpl implements CartService {
     private CartRepository cartRepository;
 
     @Autowired
+    private CartItemsRepository cartItemRepository;
+
+    @Autowired
     private ProductRepository productRepository;
 
+    @Autowired
+    private CartMapper cartMapper;
+
+    @Autowired
+    private UserClient userClient;
+
     @Override
-    public Cart createCart(String userId) {
+    public CartDTO createCart(String userId) {
+        if (!userClient.checkUserExists(userId)) {
+            throw new RuntimeException("User does not exist");
+        }
         Cart cart = new Cart();
-        cart.setUserId( userId);
-        cartRepository.save(cart);
-        return cart;
+        cart.setUserId(userId);
+        cart = cartRepository.save(cart);
+        return cartMapper.toDTO(cart);
     }
 
     @Override
-    public void addProductToCart(String cartId, Product product) {
+    public void addProductToCart(String cartId, String productId, int quantity) {
         Cart cart = cartRepository.findById(cartId)
                 .orElseThrow(() -> new RuntimeException("Cart not found"));
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new RuntimeException("Product not found"));
 
-        product = productRepository.findById(product.getId())
-                .orElseThrow(()->new RuntimeException("Product not found"));
-        for(Product p : cart.getProducts()){
-            if(!p.getId().equals(product.getId())){
-                cart.addProduct(product);
-                productRepository.save(product);
-            }
-        }
-        cartRepository.save(cart);
+        CartItems item = new CartItems();
+        item.setCart(cart);
+        item.setProduct(product);
+        item.setQuantity(quantity);
+
+        cartItemRepository.save(item);
     }
 
     @Override
-    public void removeProductFromCart(String cartId, Product product) {
-        Cart cart = cartRepository.findById(cartId).orElseThrow(() -> new RuntimeException());
-        if (cart.getProducts().isEmpty()) {
-            throw new RuntimeException("Product not found");
-        } else {
-            for(Product p : cart.getProducts()){
-                if(!p.getId().equals(product.getId())){
-                    cart.removeProduct(p);
-                    product.setCart(null);
-                    productRepository.save(product);
-                    cartRepository.save(cart);
-                }
-            }
-        }
+    public void removeProductFromCart(String cartItemId) {
+        cartItemRepository.deleteById(cartItemId);
     }
 
     @Override
-    public List<Product> getProductListCart(String cartId) {
-        return productRepository.getProductListCart(cartId);
+    public List<CartItemDTO> getCartItems(String cartId) {
+        return cartItemRepository.findByCart_CartId(cartId)
+                .stream()
+                .map(cartMapper::toCartItemDTO)
+                .collect(Collectors.toList());
     }
 
     @Override
-    public void clearCart(String cartId) {
-        Cart cart = cartRepository.findById(cartId).orElseThrow(() -> new RuntimeException());
-        List<Product> productList = new ArrayList<>();
-        // productList.add(cart.getProductId().);
-        if(!productList.isEmpty()){
-            productList.clear();
-        }
+    public CartDTO updateCartItemQuantity(String cartItemId, int quantity) {
+        CartItems item = cartItemRepository.findById(cartItemId)
+                .orElseThrow(() -> new RuntimeException("CartItem not found"));
+        item.setQuantity(quantity);
+        cartItemRepository.save(item);
+        return cartMapper.toDTO(item.getCart());
     }
 }

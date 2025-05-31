@@ -5,11 +5,7 @@ import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDateTime;
 
-@Setter
-@Getter
-@Builder
-@AllArgsConstructor
-@NoArgsConstructor
+@Data
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class UpdateCategoryRequest {
     String name;

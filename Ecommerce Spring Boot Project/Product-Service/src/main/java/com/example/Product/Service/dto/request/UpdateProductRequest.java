@@ -10,20 +10,12 @@ import java.time.LocalDateTime;
 import java.util.Date;
 
 @Data
-@Builder
-@AllArgsConstructor
-@NoArgsConstructor
-@Getter
-@Setter
-@FieldDefaults(level = AccessLevel.PRIVATE)
 public class UpdateProductRequest {
     private String name;
     private String description;
     private String image;
     private String brand;
     private double price;
-    private double importPrice;
-    private double discountPrice;
     private int discount;
     private LocalDateTime updatedDate;
     private String updatedBy;
