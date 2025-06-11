@@ -14,16 +14,24 @@ spring:
           predicates:
             - Path=/api/user/**
             - Path=/api/auth/**
-        - id: USER-SERVICE
+        - id: PRODUCT-SERVICE
           uri: lb://PRODUCT-SERVICE
           predicates:
             - Path=/api/product/**
-            - Path="/api/cart/**"
-            - Path="/api/category/**"
+            - Path=/api/cart/**
+            - Path=/api/category/**
         - id: ORDER-SERVICE
           uri: lb://ORDER-SERVICE
           predicates:
-            - Path=/api/v1/orders/**
+            - Path=/api/orders/**
+        - id: INVENTORY-SERVICE
+          uri: lb://INVENTORY-SERVICE
+          predicates:
+            - Path=/api/inventory/**
+        - id: PAYMENT-SERVICE
+          uri: lb://PAYMENT-SERVICE
+          predicates:
+            - Path=/api/payment/**
       discovery:
         locator:
           enabled: true

@@ -26,6 +26,5 @@ public class CreateProductRequest {
     @Min(value = 0, message = "Discount must be between 0 and 100")
     @Max(value = 100, message = "Discount must be between 0 and 100")
     private int discount;
-    private LocalDateTime createdDate;
-    private String createdBy;
+    private String skuCode;
 }

@@ -19,6 +19,7 @@ public class Product {
     private String brand;
     private double price;
     private int discount;
+    private String skuCode;
     private LocalDateTime createdAt;
     private String createdBy;
     private LocalDateTime updatedAt;
@@ -27,5 +28,4 @@ public class Product {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")
     private Category category;
-
 }

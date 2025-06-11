@@ -1,13 +1,24 @@
 package com.example.Order.Service.mapper;
 
-import com.example.Order.Service.dto.request.OrderDTO;
+
+import com.example.Order.Service.dto.response.OrderDTO;
+import com.example.Order.Service.dto.response.OrderDetailDTO;
 import com.example.Order.Service.entity.Order;
+import com.example.Order.Service.entity.OrderDetail;
 import lombok.Data;
 import org.mapstruct.Mapper;
 
+import java.util.List;
 
-@Mapper
+
+@Mapper(componentModel = "spring")
 public interface OrderMapper {
-    OrderDTO toOrderDTO(Order order);
+    OrderDTO toDTO(Order order);
     Order toOrder(OrderDTO orderDTO);
+
+    OrderDetailDTO toDetailDTO(OrderDetail detail);
+    OrderDetail toDetail(OrderDetailDTO dto);
+
+    List<OrderDetailDTO> toDetailDTOList(List<OrderDetail> details);
+    List<OrderDetail> toDetailList(List<OrderDetailDTO> dtos);
 }

@@ -40,7 +40,7 @@ public class ProductController {
         return ResponseEntity.ok("Delete successful");
     }
 
-    @GetMapping()
+    @GetMapping
     public ResponseEntity<List<ProductDTO>> getAllProducts() {
         return ResponseEntity.ok().body(productService.getProductList());
     }

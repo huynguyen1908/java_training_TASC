@@ -3,6 +3,7 @@ package org.example.controller;
 
 import org.example.dto.request.UpdateUserRequest;
 import org.example.dto.response.UserDTO;
+import org.example.mapper.UserMapper;
 import org.example.repository.UserRepository;
 import org.example.service.interfaces.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +19,9 @@ public class UserController {
     private UserService userService;
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private UserMapper userMapper;
 
     @GetMapping("/{userId}/exists")
     public ResponseEntity<Boolean> checkUserExists(@PathVariable String userId) {
@@ -43,5 +47,10 @@ public class UserController {
     @PutMapping("/deactivate/{userId}")
     public ResponseEntity<UserDTO> deactivateUser(@PathVariable String userId){
         return ResponseEntity.ok().body(userService.deactivateUser(userId));
+    }
+
+    @GetMapping("/{username}")
+    public UserDTO getUserByUsername(@PathVariable String username){
+        return userMapper.toDTO(userRepository.findByUsername(username));
     }
 }

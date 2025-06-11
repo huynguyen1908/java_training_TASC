@@ -12,8 +12,37 @@ spring:
     show-sql: true
   application:
     name: PAYMENT-SERVICE
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
 
 eureka:
   client:
     service-url:
       defaultZone: http://localhost:8761/eureka/
+
+paypal:
+  client-id: Af2eYH6-g55A71ZdJAPFu-2HlnxnsjCA4eiQ4vpoWBjtXx6uI6Hi4eqi5OahzX8QFXwJvbbqQBMa5FdI
+  client-secret: EI4dukeXoxgYT3MbycuFrFi7w5SDInfRAVyc57y58USvqRX-91iy-Ag5ulTCAa4Swctm98tjWMPKZaX5
+  base-url: https://api-m.sandbox.paypal.com
+  return-url: http://localhost:4200/paypal/success
+  cancel-url: http://localhost:4200/paypal/cancel
+
+vnpay:
+  tmnCode: YOUR_TMN_CODE
+  hashSecret: YOUR_SECRET
+  payUrl: https://sandbox.vnpayment.vn/paymentv2/vpcpay.html
+  returnUrl: http://localhost:8080/api/payment/vnpay/callback
+
+
+momo:
+  partnerCode: your_partner_code
+  accessKey: your_access_key
+  secretKey: your_secret_key
+  requestType: captureWallet
+  returnUrl: https://your-domain.com/api/payment/momo/callback
+  notifyUrl: https://your-domain.com/api/payment/momo/notify
+  endpoint: https://test-payment.momo.vn/v2/gateway/api/create

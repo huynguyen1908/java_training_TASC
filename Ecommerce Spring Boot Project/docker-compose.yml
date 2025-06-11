@@ -1,0 +1,257 @@
+version: '3.8'
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+    ports:
+      - "2181:2181"
+
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
+  eureka:
+    build:
+      context: ./eureka
+      dockerfile: ../Dockerfile
+      args:
+        JAR_FILE: target/eureka.jar
+    ports:
+      - "8761:8761"
+    environment:
+      - EUREKA_CLIENT_REGISTER_WITH_EUREKA=false
+      - EUREKA_CLIENT_FETCH_REGISTRY=false
+  
+  gateway:
+    build:
+      context: ./gateway
+      dockerfile: ../Dockerfile
+      args:
+        JAR_FILE: target/gateway.jar
+    ports:
+      - "8880:8880"
+    depends_on:
+      - eureka
+    environment:
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka:8761/eureka/
+  
+
+  mysql-notification:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: Nokidding123456
+      MYSQL_DATABASE: notification_service
+    ports:
+      - "3330:3306" 
+    volumes:
+      - mysql-notification-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  mysql-payment:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: Nokidding123456
+      MYSQL_DATABASE: payment_service
+    ports:
+      - "3331:3306"  
+    volumes:
+      - mysql-payment-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  mysql-order:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: Nokidding123456
+      MYSQL_DATABASE: order_service
+    ports:
+      - "3332:3306"  
+    volumes:
+      - mysql-order-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  mysql-user:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: Nokidding123456
+      MYSQL_DATABASE: user_service
+    ports:
+      - "3333:3306"  
+    volumes:
+      - mysql-user-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  mysql-product:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: Nokidding123456
+      MYSQL_DATABASE: product_service
+    ports:
+      - "3334:3306"  
+    volumes:
+      - mysql-product-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+
+  mysql-inventory:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: Nokidding123456
+      MYSQL_DATABASE: inventory_service
+    ports:
+      - "3335:3306"  
+    volumes:
+      - mysql-inventory-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  user-service:
+    build:
+      context: ./user-service
+      dockerfile: ../Dockerfile
+      args:
+        JAR_FILE: target/user-service.jar
+    depends_on:
+      - mysql-user
+      - eureka
+    ports:
+      - "8386:8386"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-user:3306/user_service
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: Nokidding123456
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka:8761/eureka/
+
+  order-service:
+    build:
+      context: ./order-service
+      dockerfile: ../Dockerfile
+      args:
+        JAR_FILE: target/order-service.jar
+    depends_on:
+      - mysql-order
+      - kafka
+      - eureka
+    ports:
+      - "8089:8089"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-order:3306/order_service
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: Nokidding123456
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka:8761/eureka/
+
+  payment-service:
+    build:
+      context: ./payment-service
+      dockerfile: ../Dockerfile
+      args:
+        JAR_FILE: target/payment-service.jar
+    depends_on:
+      - mysql-payment
+      - kafka
+      - eureka
+    ports:
+      - "8087:8087"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-payment:3306/payment_service
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: Nokidding123456
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka:8761/eureka/
+
+  notification-service:
+    build:
+      context: ./notification-service
+      dockerfile: ../Dockerfile
+      args:
+        JAR_FILE: target/notification-service.jar
+    depends_on:
+      - mysql-notification
+      - kafka
+      - eureka
+    ports:
+      - "8800:8800"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-notification:3306/notification_service
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: Nokidding123456
+      SPRING_KAFKA_CONSUMER_BOOTSTRAP_SERVERS: kafka:9092
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka:8761/eureka/
+
+  inventory-service:
+    build:
+      context: ./inventory-service
+      dockerfile: ../Dockerfile
+      args:
+        JAR_FILE: target/inventory-service.jar
+    depends_on:
+      - mysql-inventory
+      - kafka
+      - eureka
+    ports:
+      - "3060:3060"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-inventory:3306/inventory_service
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: Nokidding123456
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka:8761/eureka/
+
+  product-service:
+    build:
+      context: ./product-service
+      dockerfile: ../Dockerfile
+      args:
+        JAR_FILE: target/product-service.jar
+    depends_on:
+      - mysql-product
+      - kafka
+      - eureka
+    ports:
+      - "8088:8088"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-product:3306/product_service
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: Nokidding123456
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka:8761/eureka/
+
+volumes:
+  mysql-order-data:
+  mysql-user-data:
+  mysql-product-data:
+  mysql-inventory-data:
+  mysql-notification-data:
+  mysql-payment-data:

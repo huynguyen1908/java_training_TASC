@@ -1,24 +1,24 @@
 package com.example.Order.Service.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 @Entity
-@AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-@Setter
-@Getter
-@Table(name = "order_detail")
+@Data
 public class OrderDetail {
-    @JoinColumn(name = "order_id", nullable = false)
-    String order_id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    String orderDetailId;
 
-    String product_id;
+    @ManyToOne
+    @JoinColumn(name = "order_id")
+    @JsonManagedReference
+    Order order;
+
+    String skuCode;
     int quantity;
-    double total_price;
-    double discount_price;
+    double totalPrice;
 }

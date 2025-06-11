@@ -26,8 +26,14 @@ public class BeanConfig {
                         .uri("lb://USER-SERVICE/"))
                 .route("PRODUCT-SERVICE", r -> r.path("/api/product/**", "/api/cart/**", "/api/category/**")
                         .uri("lb://PRODUCT-SERVICE/"))
-                .route("ORDER-SERVICE", r -> r.path("/api/v1/orders/**")
+                .route("ORDER-SERVICE", r -> r.path("/api/orders/**")
                         .uri("lb://ORDER-SERVICE/"))
+                .route("INVENTORY-SERVICE", r -> r.path("api/inventory/**")
+                        .uri("lb://INVENTORY-SERVICE/"))
+                .route("PAYMENT-SERVICE", r -> r.path("api/payment/**")
+                        .uri("lb://PAYMENT-SERVICE/"))
+                .route("NOTIFICATION-SERVICE", r -> r.path("/api/notification/**")
+                        .uri("lb://NOTIFICATION-SERVICE"))
                 .build();
     }
 //

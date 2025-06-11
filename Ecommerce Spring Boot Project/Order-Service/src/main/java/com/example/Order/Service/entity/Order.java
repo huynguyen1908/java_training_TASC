@@ -1,5 +1,9 @@
 package com.example.Order.Service.entity;
 
+import com.example.Order.Service.enums.PaymentMethod;
+import com.example.Order.Service.enums.ShippingMethod;
+import com.example.Order.Service.enums.Status;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -8,38 +12,34 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
-@AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-@Setter
-@Getter
-@Table(name = "order")
+@Data
+@Table(name = "orders")
 public class Order {
     @Id
-    @Column(name = "order_id")
     @GeneratedValue(strategy = GenerationType.UUID)
     String orderId;
 
-    @Column(name = "user_id")
     String userId;
 
-    String status;
-    @Column(name = "order_date")
+    @Enumerated(EnumType.STRING)
+    Status status;
+
     LocalDateTime orderDate;
 
-    int discount;
+    @Enumerated(EnumType.STRING)
+    ShippingMethod shippingMethod;
 
-    @Column(name = "shipped_date")
-    LocalDateTime shippedDate;
+    @Enumerated(EnumType.STRING)
+    PaymentMethod paymentMethod;
 
-    @Column(name = "finished_date")
-    LocalDateTime finishedDate;
+    LocalDateTime shippedAt;
 
-    @Column(name = "ship_code")
-    String shipCode;
+    String address;
 
-    @Column(name = "transport_company")
-    String transportCompany;
+    LocalDateTime createdAt;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonManagedReference
     List<OrderDetail> orderDetailList;
 }

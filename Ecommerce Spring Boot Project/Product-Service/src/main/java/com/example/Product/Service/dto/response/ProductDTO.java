@@ -14,6 +14,7 @@ public class ProductDTO {
     private double importPrice;
     private double price;
     private int discount;
+    private String skuCode;
     private LocalDateTime createdAt;
     private String createdBy;
     private LocalDateTime updatedAt;
