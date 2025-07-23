@@ -3,6 +3,7 @@ package org.example.controller;
 import jakarta.validation.Valid;
 import org.example.dto.request.LoginRequest;
 import org.example.dto.request.RegisterRequest;
+import org.example.dto.response.ApiResponse;
 import org.example.dto.response.LoginResponse;
 import org.example.service.interfaces.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,9 +22,8 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest request){
-        authService.register(request);
-        return ResponseEntity.ok("Register successful");
+    public ApiResponse<?> register(@Valid @RequestBody RegisterRequest request){
+        return authService.register(request);
     }
     @PostMapping("/change-password/{userId}")
     public ResponseEntity<?> changePassword(@PathVariable String userId, @RequestParam String newPassword){

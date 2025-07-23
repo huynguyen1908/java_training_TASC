@@ -22,7 +22,7 @@ public class SecurityConfig {
 //                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/user/{userId}/exists").permitAll()
+                        .requestMatchers("/api/user/*/exists").permitAll()
                         .requestMatchers("/api/auth/login", "/api/auth/register",
                                 "/api/auth/logout").permitAll()
                         .requestMatchers("/api/user","/api/user/deactivate/{userId}" ).hasRole("ADMIN")

@@ -14,6 +14,7 @@ import com.example.Product.Service.repository.ProductRepository;
 import com.example.Product.Service.service.interfaces.CartService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,10 +38,11 @@ public class CartServiceImpl implements CartService {
     private UserClient userClient;
 
     @Override
+    @Transactional
     public CartDTO createCart(String userId) {
-        if (!userClient.checkUserExists(userId)) {
-            throw new RuntimeException("User does not exist");
-        }
+//        if (!userClient.checkUserExists(userId)) {
+//            throw new RuntimeException("User does not exist");
+//        }
         Cart cart = new Cart();
         cart.setUserId(userId);
         cart = cartRepository.save(cart);

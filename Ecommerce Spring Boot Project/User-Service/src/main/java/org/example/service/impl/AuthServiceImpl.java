@@ -3,9 +3,12 @@ package org.example.service.impl;
 import org.example.client.CartClient;
 import org.example.dto.request.LoginRequest;
 import org.example.dto.request.RegisterRequest;
+import org.example.dto.response.ApiResponse;
 import org.example.dto.response.LoginResponse;
 import org.example.entity.User;
 import org.example.enums.Role;
+import org.example.exception.AppException;
+import org.example.exception.StatusCode;
 import org.example.mapper.UserMapper;
 import org.example.repository.UserRepository;
 import org.example.service.interfaces.AuthService;
@@ -13,6 +16,7 @@ import org.example.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
@@ -49,33 +53,35 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public void register(RegisterRequest request) {
+    @Transactional
+    public ApiResponse<Object> register(RegisterRequest request) {
         if (userRepository.findByUsername(request.getUsername().toLowerCase()) != null) {
-            throw new RuntimeException("Username already exists");
+            throw new AppException(StatusCode.DATA_EXISTED, "Username already exists", "username");
         }
         if (userRepository.findByPhoneNumber(request.getPhoneNumber()) != null) {
-            throw new RuntimeException("Phone number already exists");
+            throw new AppException(StatusCode.DATA_EXISTED, "Phone number already exists", "phoneNumber");
         }
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("Email already exists");
+            throw new AppException(StatusCode.DATA_EXISTED, "Email already exists", "email");
         }
 
         User user = new User();
-        user.setUsername(request.getUsername().toLowerCase()); // nên chuẩn hóa username
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setFullName(request.getFullName());
-        user.setAddress(request.getAddress());
-        user.setEmail(request.getEmail());
-        user.setPhoneNumber(request.getPhoneNumber());
-        user.setAvatarUrl(request.getAvatarUrl());
+        user.setUsername(request.getUsername().trim().toLowerCase());
+        user.setPassword(passwordEncoder.encode(request.getPassword().trim()));
+        user.setFullName(request.getFullName().trim());
+        user.setAddress(request.getAddress().trim());
+        user.setEmail(request.getEmail().trim());
+        user.setPhoneNumber(request.getPhoneNumber().trim());
         user.setRole(Role.USER);
         user.setCreatedAt(LocalDateTime.now());
         user.setActive(true);
-
         userRepository.save(user);
-        System.out.println("Register Successful");
 
         cartClient.createCart(user.getUserId());
+        return ApiResponse.builder()
+                .message("Register successful!")
+                .data(null)
+                .build();
     }
 
     @Override

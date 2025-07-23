@@ -1,5 +1,6 @@
 package org.example.exception;
 
+import org.example.dto.response.ApiResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -20,9 +21,22 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(errors);
     }
 
-    @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<?> handleRuntimeException(RuntimeException ex) {
-        return ResponseEntity.badRequest().body(Map.of("error", ex.getMessage()));
+    @ExceptionHandler(AppException.class)
+    public ResponseEntity<Map<String, Object>> handleAppException(AppException ex) {
+        Map<String, Object> error = new HashMap<>();
+        error.put("code", ex.getCode());
+        error.put("field", ex.getField());
+        error.put("message", ex.getMessage());
+
+        return ResponseEntity
+                .status(ex.getHttpStatus())
+                .body(error);
     }
+
+//    @ExceptionHandler(AppException.class)
+//    public ResponseEntity<?>handleAppException(AppException appException){
+//        return ResponseEntity.badRequest()
+//                .body(ApiResponse.builder().code(appException.getCode()).field(appException.getField()).message(appException.getMessage()));
+//    }
 }
 
