@@ -49,13 +49,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             try {
                 Claims claims = jwtUtil.extractAllClaims(jwt);
                 String userId = claims.getSubject(); // sub = userId
+                String username = claims.get("username", String.class);
                 String role = claims.get("role", String.class);
 
                 List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_" + role));
 
                 UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
                         userId, null, authorities);
-
+                auth.setDetails(username);
                 SecurityContextHolder.getContext().setAuthentication(auth);
             } catch (Exception e) {
                 System.out.println("Invalid JWT: " + e.getMessage());

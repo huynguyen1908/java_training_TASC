@@ -2,13 +2,20 @@ package org.example.service.interfaces;
 
 
 import org.example.dto.request.UpdateUserRequest;
+import org.example.dto.response.ApiResponse;
 import org.example.dto.response.UserDTO;
+import org.example.entity.User;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
+import java.util.Map;
 
 public interface UserService {
-    List<UserDTO> getUserList();
-    UserDTO getUserDetail(String userId);
-    UserDTO updateUserDetail(String userId, UpdateUserRequest request);
-    UserDTO deactivateUser(String userId);
+    ApiResponse<Page<UserDTO>> getUserList(Pageable pageable);
+    ApiResponse<Object> getUserDetail(String userId);
+    ApiResponse<Object> updateUserDetail(String userId, UpdateUserRequest request);
+    ApiResponse<Object> deactivateUser(String userId);
+    ApiResponse<Object> uploadUserAvatar(String userId, MultipartFile files);
+    ApiResponse<Object> getUserAvatar(String userId);
 }

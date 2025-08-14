@@ -113,6 +113,18 @@
 			<artifactId>spring-kafka</artifactId>
 		</dependency>
 
+		<dependency>
+			<groupId>com.cloudinary</groupId>
+			<artifactId>cloudinary-http44</artifactId>
+			<version>1.37.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>io.github.openfeign.form</groupId>
+			<artifactId>feign-form</artifactId>
+			<version>3.8.0</version>
+		</dependency>
+
 
 	</dependencies>
 

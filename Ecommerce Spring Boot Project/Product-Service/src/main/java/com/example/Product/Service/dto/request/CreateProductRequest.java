@@ -15,7 +15,6 @@ public class CreateProductRequest {
     @NotBlank(message = "Product name is required")
     private String name;
     private String description;
-    private String image;
 
     @NotBlank(message = "Brand is required")
     private String brand;
@@ -27,4 +26,5 @@ public class CreateProductRequest {
     @Max(value = 100, message = "Discount must be between 0 and 100")
     private int discount;
     private String skuCode;
+    private String categoryId;
 }

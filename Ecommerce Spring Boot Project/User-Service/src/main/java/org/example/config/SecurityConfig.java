@@ -22,11 +22,12 @@ public class SecurityConfig {
 //                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/user/*/exists").permitAll()
-                        .requestMatchers("/api/auth/login", "/api/auth/register",
-                                "/api/auth/logout").permitAll()
-                        .requestMatchers("/api/user","/api/user/deactivate/{userId}" ).hasRole("ADMIN")
-                        .anyRequest().authenticated())
+//                        .requestMatchers("/api/user/*/exists").permitAll()
+//                        .requestMatchers("/api/auth/login", "/api/auth/register",
+//                                "/api/auth/logout").permitAll()
+//                        .requestMatchers("/api/user","/api/user/deactivate/{userId}" ).hasRole("ADMIN")
+//                        .anyRequest().authenticated())
+                        .anyRequest().permitAll())
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore((Filter) jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();

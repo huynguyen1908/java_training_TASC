@@ -25,11 +25,12 @@ public class SecurityConfig {
 //                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/product/create", "/api/product/delete/{productId}",
-                                "/api/product/update/{productId}", "/api/category/create",
-                                "/api/category/{categoryId}/add-product/{productId}", "/api/category/edit/{categoryId}").hasRole("ADMIN")
-                        .requestMatchers("/api/cart/create").permitAll()
-                        .anyRequest().authenticated())
+//                        .requestMatchers("/api/product/create", "/api/product/delete/{productId}",
+//                                "/api/product/update/{productId}", "/api/category/create",
+//                                "/api/category/{categoryId}/add-product/{productId}", "/api/category/edit/{categoryId}").hasRole("ADMIN")
+//                        .requestMatchers("/api/cart/create").permitAll()
+//                        .anyRequest().authenticated())
+                        .anyRequest().permitAll())
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore((Filter) jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();

@@ -2,6 +2,8 @@ package com.example.Product.Service.repository;
 
 import com.example.Product.Service.entity.Product;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -16,4 +18,10 @@ public interface ProductRepository extends JpaRepository<Product, String> {
 
     List<Product> findByCategory_CategoryId(String categoryId);
     boolean existsBySkuCode(String skuCode);
+
+    List<String> findImagePathByProductId(String productId);
+
+
+    @Query("SELECT c.name FROM Product p left join p.category c where p.productId = :productId")
+    String findProductCategoryByProductId(@Param("productId") String productId);
 }

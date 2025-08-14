@@ -5,15 +5,18 @@ import jakarta.persistence.Column;
 import jakarta.persistence.OneToMany;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 @Data
 public class UpdateProductRequest {
     private String name;
     private String description;
-    private String image;
+    private List<MultipartFile> images;
     private String brand;
     private double price;
     private int discount;
