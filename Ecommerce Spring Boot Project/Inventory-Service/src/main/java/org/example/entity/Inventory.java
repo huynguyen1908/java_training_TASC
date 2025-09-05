@@ -18,6 +18,18 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Inventory {
+    public Inventory(String skuCode) {
+        this.skuCode = skuCode;
+    }
+
+    public Inventory(String skuCode, String name, int quantity, double importPrice, LocalDateTime importedAt) {
+        this.skuCode = skuCode;
+        this.name = name;
+        this.quantity = quantity;
+        this.importPrice = importPrice;
+        this.importedAt = importedAt;
+    }
+
     @Id
     String skuCode;
     String name;

@@ -1,5 +1,6 @@
 package com.example.Product.Service.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -14,8 +15,9 @@ public class Product {
     @GeneratedValue(strategy = GenerationType.UUID)
     private String productId;
     private String name;
+
+    @Lob
     private String description;
-//    private String imageUrl;
     private String brand;
     private double price;
     private int discount;
@@ -27,5 +29,9 @@ public class Product {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")
+    @JsonIgnore
     private Category category;
+
+    @Column(name = "is_active")
+    private Long isActive;
 }

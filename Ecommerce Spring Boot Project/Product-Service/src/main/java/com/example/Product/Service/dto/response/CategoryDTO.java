@@ -18,5 +18,5 @@ public class CategoryDTO {
     private String createdBy;
     private LocalDateTime updatedAt;
     private String updatedBy;
-    private List<ProductDTO> products;
+    private List<String> productId;
 }

@@ -4,13 +4,14 @@ import lombok.Data;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @Data
 public class ProductDTO {
     private String productId;
     private String name;
     private String description;
-    private List<String> imageUrl;
+    private Map<Long,String> imageUrl;
     private String brand;
     private double importPrice;
     private double price;
@@ -20,5 +21,7 @@ public class ProductDTO {
     private String createdBy;
     private LocalDateTime updatedAt;
     private String updatedBy;
-    private String category;
+    private Map<String, String> categoryMap;
+    private int quantity;
+    private Long isActive;
 }

@@ -16,10 +16,13 @@ import java.util.Map;
 public class UpdateProductRequest {
     private String name;
     private String description;
-    private List<MultipartFile> images;
+//    private List<MultipartFile> images;
     private String brand;
     private double price;
     private int discount;
+    private String skuCode;
+    private String categoryId;
+    private int quantity;
     private LocalDateTime updatedDate;
     private String updatedBy;
 }

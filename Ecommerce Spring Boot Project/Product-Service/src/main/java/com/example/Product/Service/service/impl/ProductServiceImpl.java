@@ -1,7 +1,5 @@
 package com.example.Product.Service.service.impl;
 
-import com.example.Product.Service.client.CloudinaryClient;
-import com.example.Product.Service.client.UserClient;
 import com.example.Product.Service.dto.request.CreateProductRequest;
 import com.example.Product.Service.dto.request.UpdateProductRequest;
 import com.example.Product.Service.dto.response.ProductDTO;
@@ -11,11 +9,19 @@ import com.example.Product.Service.enums.NotificationType;
 import com.example.Product.Service.event.NotificationEvent;
 import com.example.Product.Service.event.ProductCreatedEvent;
 import com.example.Product.Service.mapper.ProductMapper;
+import com.example.Product.Service.repository.CategoryRepository;
 import com.example.Product.Service.repository.ImageRepository;
 import com.example.Product.Service.repository.ProductRepository;
+import com.example.Product.Service.service.interfaces.CategoryService;
 import com.example.Product.Service.service.interfaces.ProductService;
-import com.example.Product.Service.util.JwtUtil;
 
+import jakarta.transaction.Transactional;
+import org.example.client.CloudinaryClient;
+//import org.example.client.UserClient;
+import org.example.client.InventoryClient;
+import org.example.dto.response.ApiResponse;
+import org.example.exception.StatusCode;
+import org.example.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -27,6 +33,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.stream.Collectors;
 
 @Service
 public class ProductServiceImpl implements ProductService {
@@ -42,21 +49,33 @@ public class ProductServiceImpl implements ProductService {
     @Autowired
     private KafkaTemplate<String, NotificationEvent> notificationKafkaTemplate;
 
-    @Autowired
-    private CloudinaryClient cloudinaryClient;
-
-    @Autowired
-    private UserClient userClient;
+    private final CloudinaryClient cloudinaryClient;
+    private final InventoryClient inventoryClient;
 
     @Autowired
     private ImageRepository imageRepository;
 
     private static JwtUtil jwtUtil;
 
+    @Autowired
+    private CategoryRepository categoryRepository;
+
+    @Autowired
+    private CategoryService categoryService;
+
+    @Autowired
+    public ProductServiceImpl(CloudinaryClient cloudinaryClient,
+                              InventoryClient inventoryClient) {
+        this.cloudinaryClient = cloudinaryClient;
+        this.inventoryClient = inventoryClient;
+    }
+
     @Override
-    public void createProduct(CreateProductRequest productRequest) {
+    @Transactional
+    public ApiResponse<ProductDTO> createProduct(CreateProductRequest productRequest) {
         Product product = productMapper.fromCreateRequest(productRequest);
-        product.setCreatedAt(LocalDateTime.now());
+        product.setCategory(categoryRepository.findById(productRequest.getCategoryId())
+                .orElseThrow(() -> new RuntimeException("Category not found")));
 
         if (productRequest.getSkuCode() == null || productRequest.getSkuCode().isBlank()) {
             String generatedSku = "SKU-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
@@ -71,12 +90,18 @@ public class ProductServiceImpl implements ProductService {
 
         String username = SecurityContextHolder.getContext().getAuthentication().getDetails().toString();
         product.setCreatedBy(username);
+        product.setCreatedAt(LocalDateTime.now());
+        product.setIsActive(1L);
         productRepository.save(product);
+
+        uploadProductImage(productRequest.getFiles(), product.getProductId());
+        categoryService.addProductToCategory(productRequest.getCategoryId(), product.getProductId());
 
         ProductCreatedEvent event = new ProductCreatedEvent(
                 product.getSkuCode(),
                 product.getName(),
-                product.getPrice()
+                product.getPrice(),
+                productRequest.getQuantity()
         );
         kafkaTemplate.send("product-created-topic", event);
 
@@ -88,6 +113,11 @@ public class ProductServiceImpl implements ProductService {
         );
         notificationKafkaTemplate.send("new-product-topic", notificationEvent);
 
+        return ApiResponse.<ProductDTO>builder()
+                .code(StatusCode.SUCCESS.getCode())
+                .message(StatusCode.SUCCESS.getMessage())
+                .data(productMapper.toDTO(product))
+                .build();
     }
 
     @Override
@@ -102,9 +132,15 @@ public class ProductServiceImpl implements ProductService {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new RuntimeException("Product not found"));
         ProductDTO productDTO = productMapper.toDTO(product);
-        List<String> imageUrls = imageRepository.findImagePathByProductId(productId);
+        Map<Long,String> imageUrls = getProductImageList(productId);
         productDTO.setImageUrl(imageUrls);
-        productDTO.setCategory(productRepository.findProductCategoryByProductId(productId));
+        productDTO.setCategoryMap(productRepository.getCategoryIdAndCategoryNameByProductId(productId).stream()
+                .filter(obj -> obj[0] != null && obj[1] != null)
+                .collect(Collectors.toMap(
+                        obj -> (String) obj[0],
+                        obj -> (String) obj[1]
+                )));
+        productDTO.setQuantity(inventoryClient.getStockByProduct(product.getSkuCode()));
         return productDTO;
     }
 
@@ -119,16 +155,14 @@ public class ProductServiceImpl implements ProductService {
     public ProductDTO editProduct(String productId, UpdateProductRequest request) {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new RuntimeException("Product not found"));
-        if (request.getImages() != null && !request.getImages().isEmpty()) {
-            uploadProductImage(request.getImages(), productId);
-        }
 
         String username = SecurityContextHolder.getContext().getAuthentication().getDetails().toString();
-        request.setUpdatedBy(username);
-        request.setUpdatedDate(LocalDateTime.now());
+        product.setUpdatedBy(username);
+        product.setUpdatedAt(LocalDateTime.now());
 
         productMapper.updateProductFromRequest(request, product);
         productRepository.save(product);
+        inventoryClient.addStock(product.getSkuCode(), product.getName(), request.getQuantity(), request.getPrice());
         return productMapper.toDTO(product);
     }
 
@@ -136,14 +170,15 @@ public class ProductServiceImpl implements ProductService {
     public void uploadProductImage(List<MultipartFile> files, String productId) {
         ExecutorService service = Executors.newFixedThreadPool(3);
         System.out.println("total files: " + files.size());
+        String username = SecurityContextHolder.getContext().getAuthentication().getDetails().toString();
 
         List<Future<?>> futures = new ArrayList<>();
         for (MultipartFile file : files) {
             futures.add(service.submit(() -> {
                 try {
                     String fileName = file.getOriginalFilename();
+                    // use client module
                     String filePath = cloudinaryClient.uploadMultipartFile(file, fileName);
-
 
                     //save image information to database
                     Image image = new Image();
@@ -151,7 +186,6 @@ public class ProductServiceImpl implements ProductService {
                     image.setImagePath(filePath);
 
                     //username
-                    String username = SecurityContextHolder.getContext().getAuthentication().getDetails().toString();
                     image.setCreatedBy(username);
                     image.setCreatedAt(LocalDateTime.now());
                     image.setObjectId(productId);
@@ -177,8 +211,12 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public List<String> getProductImageList(String productId) {
-        List<String> images = imageRepository.findImagePathByProductId(productId);
+    public Map<Long,String> getProductImageList(String productId) {
+        Map<Long,String> images = imageRepository.findImagePathByProductId(productId).stream()
+                .collect(Collectors.toMap(
+                        row-> (Long) row[0],
+                        row-> (String) row[1]
+                ));
         return images;
     }
 

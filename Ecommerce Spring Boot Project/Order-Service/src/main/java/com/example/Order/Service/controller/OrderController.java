@@ -1,10 +1,13 @@
 package com.example.Order.Service.controller;
 
+import com.example.Order.Service.dto.request.OrderRequest;
 import com.example.Order.Service.dto.response.OrderDTO;
 import com.example.Order.Service.entity.Order;
 import com.example.Order.Service.service.OrderService;
 import lombok.Data;
+import org.example.dto.response.ApiResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -13,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@Controller
+@RestController
 @Data
 @RequestMapping("/api/orders")
 public class OrderController {
@@ -21,39 +24,38 @@ public class OrderController {
     OrderService orderService;
 
     @PostMapping("/place-order")
-    public ResponseEntity<?> placeOrder(@RequestBody OrderDTO orderDTO){
-        orderService.placeOrder(orderDTO);
-        return ResponseEntity.ok("Place order successful");
+    public ApiResponse<Object> placeOrder(@RequestBody OrderRequest request){
+        return orderService.placeOrder(request);
     }
 
     @PutMapping("/{orderId}/cancel")
-    @PreAuthorize("@orderSecurity.isOrderOwner(#orderId)")
+//    @PreAuthorize("@orderSecurity.isOrderOwner(#orderId)")
     public ResponseEntity<?> cancelOrder(@PathVariable String orderId) {
         orderService.cancelOrder(orderId);
         return ResponseEntity.ok("Cancel order");
     }
 
     @GetMapping("/user/{userId}/history")
-    @PreAuthorize("#userId == authentication.principal or hasRole('ADMIN')")
-    public ResponseEntity<List<OrderDTO>> getOrderHistoryByUser(@PathVariable String userId) {
-        return ResponseEntity.ok(orderService.getOrderHistoryByUser(userId));
+//    @PreAuthorize("#userId == authentication.principal or hasRole('ADMIN')")
+    public ApiResponse<Object> getOrderHistoryByUser(@PathVariable String userId, Pageable pageable) {
+        return orderService.getOrderHistoryByUser(userId, pageable);
     }
 
 
-    @GetMapping("/{id}")
-    @PreAuthorize("@orderSecurity.hasAccessToOrder(#orderId)")
-    public ResponseEntity<OrderDTO> getOrderDetails(@PathVariable String orderId) {
-        return ResponseEntity.ok(orderService.getOrderDetails(orderId));
+    @GetMapping("/order-detail/{orderId}")
+//    @PreAuthorize("@orderSecurity.hasAccessToOrder(#orderId)")
+    public ApiResponse<Object> getOrderDetails(@PathVariable String orderId) {
+        return orderService.getOrderDetails(orderId);
     }
 
-    @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<OrderDTO>> getAllOrders() {
-        return ResponseEntity.ok(orderService.getAllOrders());
+    @GetMapping("/get-order-list")
+//    @PreAuthorize("hasRole('ADMIN')")
+    public ApiResponse<Object> getListOrder(Pageable pageable) {
+        return orderService.getListOrder(pageable);
     }
 
     @PutMapping("{orderId}/status")
-    @PreAuthorize("hasRole('ADMIN')")
+//    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> updateStatus(
             @PathVariable String orderId,
             @RequestParam String status) {

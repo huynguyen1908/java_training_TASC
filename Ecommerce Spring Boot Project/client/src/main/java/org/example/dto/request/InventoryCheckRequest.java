@@ -1,4 +1,4 @@
-//package com.example.Order.Service.dto.request;
+//package org.example.dto.request;
 //
 //import lombok.AllArgsConstructor;
 //import lombok.Data;
@@ -7,7 +7,7 @@
 //@Data
 //@AllArgsConstructor
 //@NoArgsConstructor
-//public class StockUpdateRequest {
+//public class InventoryCheckRequest {
 //    private String skuCode;
 //    private int quantity;
 //}

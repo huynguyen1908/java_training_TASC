@@ -4,6 +4,7 @@ package org.example.service.impl;
 import org.example.client.CloudinaryClient;
 import org.example.dto.request.UpdateUserRequest;
 import org.example.dto.response.ApiResponse;
+import org.example.dto.response.PageResponse;
 import org.example.dto.response.UserDTO;
 import org.example.entity.Image;
 import org.example.entity.User;
@@ -35,29 +36,37 @@ public class UserServiceImpl implements UserService {
     @Autowired
     PasswordEncoder passwordEncoder;
 
-    @Autowired
-    private CloudinaryClient cloudinaryClient;
+    private final CloudinaryClient cloudinaryClient;
 
     @Autowired
     private ImageRepository imageRepository;
 
-    @Override
-    public ApiResponse<Page<UserDTO>> getUserList(Pageable pageable) {
-        Page<User> userPage = userRepository.findAll(pageable);
-        Page<UserDTO> userDTOPage = userPage.map(userMapper::toDTO);
+    @Autowired
+    public UserServiceImpl(CloudinaryClient cloudinaryClient) {
+        this.cloudinaryClient = cloudinaryClient;
+    }
 
-        return ApiResponse.<Page<UserDTO>>builder()
+    @Override
+    public ApiResponse<Object> getUserList(Pageable pageable) {
+        Page<UserDTO> userPage = userRepository.findAll(pageable).map(userMapper::toDTO);
+        return ApiResponse.builder()
                 .code(StatusCode.SUCCESS.getCode())
                 .message(StatusCode.SUCCESS.getMessage())
-                .data(userDTOPage)
+                .data(new PageResponse<>(userPage.getContent(), userPage.getTotalPages(), userPage.getTotalElements()))
                 .build();
     }
     @Override
     public ApiResponse<Object> getUserDetail(String userId){
+        User user = userRepository.findById(userId).orElseThrow(()-> new RuntimeException("User not found"));
+        UserDTO userDTO = userMapper.toDTO(user);
+        userDTO.setAvatarUrl(imageRepository.findImagePathByUserId(userId));
         return ApiResponse.builder()
-                .data(userRepository.findById(userId)
-                .map(userMapper::toDTO).orElseThrow(()-> new RuntimeException("User not found"))).build();
+                .code(StatusCode.SUCCESS.getCode())
+                .message(StatusCode.SUCCESS.getMessage())
+                .data(userDTO)
+                .build();
     }
+
     @Override
     public ApiResponse<Object> updateUserDetail(String userId, UpdateUserRequest request) {
         User user = userRepository.findById(userId).orElseThrow(()->new RuntimeException("User not found!"));

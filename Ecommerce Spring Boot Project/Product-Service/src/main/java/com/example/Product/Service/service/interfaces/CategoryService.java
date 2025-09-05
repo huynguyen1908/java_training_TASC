@@ -1,32 +1,34 @@
 package com.example.Product.Service.service.interfaces;
 
 import com.example.Product.Service.dto.request.CreateCategoryRequest;
-import com.example.Product.Service.dto.request.UpdateCategoryRequest;
-import com.example.Product.Service.dto.request.UpdateProductRequest;
+
 import com.example.Product.Service.dto.response.CategoryDTO;
 import com.example.Product.Service.dto.response.ProductDTO;
-import com.example.Product.Service.entity.Category;
-import com.example.Product.Service.entity.Product;
-import com.example.Product.Service.repository.CategoryRepository;
+import org.example.dto.response.ApiResponse;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 
 import java.util.List;
 import java.util.Optional;
 
 public interface CategoryService {
-    List<CategoryDTO> getAllCategories();
+    ApiResponse<Object> getAllCategories(Pageable pageable);
 
-    List<ProductDTO> getProductsByCategory(String categoryId);
+    ApiResponse<Object> getProductsByCategory(String categoryId, Pageable pageable);
 
-    CategoryDTO createCategory(CreateCategoryRequest request);
+    ApiResponse<Object> createCategory(CreateCategoryRequest request);
 
-    CategoryDTO getCategoryById(String categoryId);
+    ApiResponse<Object> getCategoryById(String categoryId);
 
-    CategoryDTO editCategory(String categoryId, CreateCategoryRequest request);
+    ApiResponse<Object> editCategory(String categoryId, CreateCategoryRequest request);
 
-//    void deleteCategory(String categoryId);
 
-    CategoryDTO addProductToCategory(String categoryId, String productId);
+    ApiResponse<Object> addProductToCategory(String categoryId, String productId);
 
-//    void removeProductOutOfCategory(String categoryId, Product product);
+    ApiResponse<Object> getCategoryIdAndCategoryName();
+
+    ApiResponse<Object> getCategoryNameById(String categoryId);
+
 
 }

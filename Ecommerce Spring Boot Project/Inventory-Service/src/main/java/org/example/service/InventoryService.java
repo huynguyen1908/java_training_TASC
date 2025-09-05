@@ -15,18 +15,6 @@ public class InventoryService {
     @Autowired
     InventoryRepository inventoryRepository;
 
-//    public boolean isInStock(String skuCode, int requestedQuantity) {
-//        return inventoryRepository.findBySkuCode(skuCode)
-//                .filter(inv -> inv.getQuantity() >= requestedQuantity)
-//                .map(inv -> {
-//                    inv.setQuantity(inv.getQuantity() - requestedQuantity);
-//                    inv.setReservedQuantity(inv.getReservedQuantity() + requestedQuantity);
-//                    inventoryRepository.save(inv);
-//                    return true;
-//                })
-//                .orElse(false);
-//    }
-
     public boolean isInStock(List<InventoryCheckRequest> requests){
         for (InventoryCheckRequest item: requests) {
             Inventory inventory = inventoryRepository.findBySkuCode(item.getSkuCode()).orElseThrow(()->new RuntimeException("Inventory not found:" + item.getSkuCode()));
@@ -54,17 +42,16 @@ public class InventoryService {
     }
 
     public void addStock(String skuCode, String name, int quantity, double importPrice) {
-        Inventory inventory = inventoryRepository.findBySkuCode(skuCode).orElseThrow(()-> new RuntimeException("Not found inventory"));
-        inventory.setQuantity(inventory.getQuantity() + quantity);
+        Inventory inventory = inventoryRepository.findBySkuCode(skuCode).orElse(new Inventory(skuCode, name, quantity, importPrice, LocalDateTime.now()));
+        inventory.setQuantity(quantity);
         inventory.setImportPrice(importPrice);
         inventory.setName(name);
         inventory.setImportedAt(LocalDateTime.now());
         inventoryRepository.save(inventory);
     }
 
-    public Inventory getStockByProduct(String skuCode) {
-        return inventoryRepository.findBySkuCode(skuCode)
-                .orElseThrow(() -> new RuntimeException("Product not found"));
+    public int getProductQuantityByProduct(String skuCode) {
+        return inventoryRepository.getQuantityBySkuCode(skuCode).orElse(0);
     }
 
     public List<Inventory> getAllInventory() {

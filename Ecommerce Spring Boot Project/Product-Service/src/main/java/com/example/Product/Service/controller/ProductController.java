@@ -7,6 +7,7 @@ import com.example.Product.Service.entity.Product;
 import com.example.Product.Service.service.impl.ProductServiceImpl;
 import com.example.Product.Service.service.interfaces.ProductService;
 import jakarta.validation.Valid;
+import org.example.dto.response.ApiResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -27,12 +28,11 @@ public class ProductController {
 
 //    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/create")
-    public ResponseEntity<?> createProduct(@Valid @RequestBody CreateProductRequest productRequest){
-        productService.createProduct(productRequest);
-        return ResponseEntity.status(HttpStatus.CREATED).body("Create new product successful");
+    public ApiResponse<ProductDTO> createProduct(@Valid @ModelAttribute CreateProductRequest productRequest){
+        return productService.createProduct(productRequest);
     }
 
-    @GetMapping("/{productId}")
+    @GetMapping("/get-details/{productId}")
     public ResponseEntity<ProductDTO> getProductById(@PathVariable String productId) {
         return ResponseEntity.ok().body(productService.getProductById(productId));
     }
@@ -44,7 +44,7 @@ public class ProductController {
         return ResponseEntity.ok("Delete successful");
     }
 
-    @GetMapping
+    @GetMapping("/get-list")
     public ResponseEntity<Page<ProductDTO>> getAllProducts(Pageable pageable) {
         return ResponseEntity.ok().body(productService.getProductList(pageable));
     }
@@ -67,7 +67,7 @@ public class ProductController {
     }
 
     @GetMapping("/get-image/{productId}")
-    public ResponseEntity<List<String>> getProductImages(@PathVariable String productId) {
+    public ResponseEntity<Map<Long,String>> getProductImages(@PathVariable String productId) {
         return ResponseEntity.ok(productService.getProductImageList(productId));
     }
 

@@ -11,4 +11,5 @@ public class ProductCreatedEvent {
     private String skuCode;
     private String name;
     private double importPrice;
+    private int quantity;
 }

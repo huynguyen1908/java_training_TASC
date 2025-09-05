@@ -3,7 +3,9 @@ package org.example.controller;
 import lombok.RequiredArgsConstructor;
 import org.example.dto.request.InventoryCheckRequest;
 import org.example.dto.request.StockUpdateRequest;
+
 import org.example.entity.Inventory;
+
 import org.example.service.InventoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -33,14 +35,14 @@ public class InventoryController {
     }
 
     @PostMapping("/add-stock")
-    public ResponseEntity<Void> addStock(@RequestBody Inventory inventory) {
-        inventoryService.addStock(inventory.getSkuCode(), inventory.getName(), inventory.getQuantity(), inventory.getImportPrice());
+    public ResponseEntity<Void> addStock(@RequestParam String skuCode, @RequestParam String name, @RequestParam int quantity, @RequestParam double importPrice) {
+        inventoryService.addStock(skuCode, name, quantity, importPrice);
         return ResponseEntity.ok().build();
     }
 
     @GetMapping("/{skuCode}")
-    public ResponseEntity<Inventory> getStockByProduct(@PathVariable String skuCode) {
-        return ResponseEntity.ok(inventoryService.getStockByProduct(skuCode));
+    public int getStockByProduct(@PathVariable String skuCode) {
+        return inventoryService.getProductQuantityByProduct(skuCode);
     }
 
     @GetMapping

@@ -23,8 +23,9 @@ public class SecurityConfig {
 //                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/orders", "/api/orders/{orderId}/status").hasRole("ADMIN")
-                        .anyRequest().authenticated())
+//                        .requestMatchers("/api/orders", "/api/orders/{orderId}/status").hasRole("ADMIN")
+//                        .anyRequest().authenticated())
+                        .anyRequest().permitAll())
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();

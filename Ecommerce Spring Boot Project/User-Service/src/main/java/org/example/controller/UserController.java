@@ -32,25 +32,24 @@ public class UserController {
         return ResponseEntity.ok(userRepository.existsById(userId));
     }
 
-    @GetMapping()
-    public ResponseEntity<ApiResponse<Page<UserDTO>>> getUserList(Pageable pageable) {
-        return ResponseEntity.ok().body(userService.getUserList(pageable));
+    @GetMapping("/get-list")
+    public ApiResponse<Object> getUserList(Pageable pageable) {
+        return userService.getUserList(pageable);
     }
 
-    @GetMapping("/{userId}")
+    @GetMapping("/user-detail/{userId}")
     public ResponseEntity<ApiResponse<Object>> getUserDetail(@PathVariable String userId) {
         return ResponseEntity.ok().body(userService.getUserDetail(userId));
-
     }
 
     @PutMapping("/update/{userId}")
-    public ResponseEntity<ApiResponse<Object>> updateUserDetail(@PathVariable String userId, @RequestBody UpdateUserRequest request){
-        return ResponseEntity.ok().body(userService.updateUserDetail(userId, request));
+    public ApiResponse<Object> updateUserDetail(@PathVariable String userId, @RequestBody UpdateUserRequest request){
+        return userService.updateUserDetail(userId, request);
     }
 
     @PutMapping("/deactivate/{userId}")
-    public ResponseEntity<ApiResponse<Object>> deactivateUser(@PathVariable String userId){
-        return ResponseEntity.ok().body(userService.deactivateUser(userId));
+    public ApiResponse<Object> deactivateUser(@PathVariable String userId){
+        return userService.deactivateUser(userId);
     }
 
     @GetMapping("/{username}")
@@ -59,13 +58,13 @@ public class UserController {
     }
 
     @PostMapping("/upload-avatar/{userId}")
-    public ResponseEntity<ApiResponse<Object>> uploadUserAvatar(@PathVariable String userId, @RequestParam MultipartFile files) {
-        return ResponseEntity.ok().body(userService.uploadUserAvatar(userId, files));
+    public ApiResponse<Object> uploadUserAvatar(@PathVariable String userId, @RequestParam MultipartFile files) {
+        return userService.uploadUserAvatar(userId, files);
     }
 
     @GetMapping("/avatar/{userId}")
-    public ResponseEntity<ApiResponse<Object>> getUserAvatar(@PathVariable String userId) {
-        return ResponseEntity.ok().body(userService.getUserAvatar(userId));
+    public ApiResponse<Object> getUserAvatar(@PathVariable String userId) {
+        return userService.getUserAvatar(userId);
     }
 
 }

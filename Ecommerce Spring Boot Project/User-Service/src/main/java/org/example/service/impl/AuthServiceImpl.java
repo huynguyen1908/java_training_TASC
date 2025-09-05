@@ -36,7 +36,7 @@ public class AuthServiceImpl implements AuthService {
     private CartClient cartClient;
 
     @Override
-    public LoginResponse login(LoginRequest request){
+    public LoginResponse login(LoginRequest request) {
         User user = userRepository.findByUsername(request.getUsername());
         if (user == null) {
             throw new RuntimeException("Invalid username");
@@ -46,10 +46,7 @@ public class AuthServiceImpl implements AuthService {
             throw new RuntimeException("Invalid password");
         }
         String jwtToken = jwtUtil.generateToken(user.getUserId(), user.getUsername(), user.getRole().name());
-        return new LoginResponse(
-                jwtToken,
-                userMapper.toDTO(user)
-        );
+        return new LoginResponse(jwtToken, userMapper.toDTO(user));
     }
 
     @Override
@@ -78,14 +75,11 @@ public class AuthServiceImpl implements AuthService {
         userRepository.save(user);
 
         cartClient.createCart(user.getUserId());
-        return ApiResponse.builder()
-                .message("Register successful!")
-                .data(null)
-                .build();
+        return ApiResponse.builder().message("Register successful!").data(null).build();
     }
 
     @Override
-    public void logout(){
+    public void logout() {
         System.out.println("Logout successful");
     }
 
@@ -96,8 +90,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public void changePassword(String userId, String newPassword) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
 
         if (passwordEncoder.matches(newPassword, user.getPassword())) {
             throw new RuntimeException("New password must be different from the old password");

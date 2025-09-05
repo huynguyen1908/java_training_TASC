@@ -6,9 +6,11 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.Date;
+import java.util.List;
 
 @Data
 public class CreateProductRequest {
@@ -27,4 +29,6 @@ public class CreateProductRequest {
     private int discount;
     private String skuCode;
     private String categoryId;
+    private int quantity;
+    private List<MultipartFile> files;
 }

@@ -1,6 +1,7 @@
 package com.example.Order.Service.mapper;
 
 
+import com.example.Order.Service.dto.request.OrderRequest;
 import com.example.Order.Service.dto.response.OrderDTO;
 import com.example.Order.Service.dto.response.OrderDetailDTO;
 import com.example.Order.Service.entity.Order;
@@ -21,4 +22,6 @@ public interface OrderMapper {
 
     List<OrderDetailDTO> toDetailDTOList(List<OrderDetail> details);
     List<OrderDetail> toDetailList(List<OrderDetailDTO> dtos);
+
+    Order requestToOrder(OrderRequest request);
 }
