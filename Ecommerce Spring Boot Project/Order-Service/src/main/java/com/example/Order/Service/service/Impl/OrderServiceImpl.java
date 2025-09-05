@@ -1,10 +1,6 @@
 package com.example.Order.Service.service.Impl;
 
-import com.example.Order.Service.client.InventoryClient;
-//import com.example.Order.Service.client.PaymentServiceClient;
-import com.example.Order.Service.dto.request.InventoryCheckRequest;
-import com.example.Order.Service.dto.request.PaymentRequest;
-import com.example.Order.Service.dto.request.StockUpdateRequest;
+import com.example.Order.Service.dto.request.OrderRequest;
 import com.example.Order.Service.dto.response.OrderDTO;
 import com.example.Order.Service.entity.Order;
 import com.example.Order.Service.entity.OrderDetail;
@@ -14,9 +10,18 @@ import com.example.Order.Service.mapper.OrderMapper;
 import com.example.Order.Service.repository.OrderRepository;
 import com.example.Order.Service.service.OrderService;
 import jakarta.transaction.Transactional;
-import org.aspectj.weaver.ast.Or;
+import jakarta.ws.rs.core.SecurityContext;
+import org.example.client.InventoryClient;
+import org.example.dto.request.InventoryCheckRequest;
+import org.example.dto.request.StockUpdateRequest;
+import org.example.dto.response.ApiResponse;
+import org.example.dto.response.PageResponse;
+import org.example.exception.StatusCode;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -31,21 +36,28 @@ public class OrderServiceImpl implements OrderService {
     @Autowired
     OrderMapper orderMapper;
 
-    @Autowired
-    InventoryClient inventoryClient;
+    private final InventoryClient inventoryClient;
 
     @Autowired
     private KafkaTemplate<String, OrderCreatedEvent> orderCreatedEventKafkaTemplate;
+
+    @Autowired
+    public OrderServiceImpl(InventoryClient inventoryClient) {
+        this.inventoryClient = inventoryClient;
+    }
+
     @Override
     @Transactional
-    public void placeOrder(OrderDTO orderDTO) {
-        List<InventoryCheckRequest> checkRequests = orderDTO.getOrderDetailList().stream()
+    public ApiResponse<Object> placeOrder(OrderRequest request) {
+        List<InventoryCheckRequest> checkRequests = request.getOrderDetailList().stream()
                 .map(item -> new InventoryCheckRequest(item.getSkuCode(), item.getQuantity()))
                 .collect(Collectors.toList());
         boolean inStock = inventoryClient.isInStock(checkRequests);
-        if(!inStock) throw new RuntimeException("Some products are out of stock.");
+        if (!inStock) throw new RuntimeException("Some products are out of stock.");
 
-        Order order = orderMapper.toOrder(orderDTO);
+        Order order = orderMapper.requestToOrder(request);
+        String userId = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
+        order.setUserId(userId);
         order.setCreatedAt(LocalDateTime.now());
         order.setOrderDate(LocalDateTime.now());
         order.setStatus(Status.PENDING);
@@ -56,7 +68,7 @@ public class OrderServiceImpl implements OrderService {
 
         orderRepository.save(order);
 
-        List<StockUpdateRequest> updateRequests = orderDTO.getOrderDetailList().stream()
+        List<StockUpdateRequest> updateRequests = request.getOrderDetailList().stream()
                 .map(item -> new StockUpdateRequest(item.getSkuCode(), item.getQuantity()))
                 .collect(Collectors.toList());
 
@@ -68,46 +80,73 @@ public class OrderServiceImpl implements OrderService {
                 order.getOrderId()
         );
         orderCreatedEventKafkaTemplate.send("order-placed-topic", event);
+
+        return ApiResponse.builder()
+                .code(StatusCode.SUCCESS.getCode())
+                .message(StatusCode.SUCCESS.getMessage())
+                .data(orderMapper.toDTO(order))
+                .build();
     }
 
     @Override
     @Transactional
-    public void cancelOrder(String orderId) {
+    public ApiResponse<Object> cancelOrder(String orderId) {
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(()->new RuntimeException("Order not found"));
+                .orElseThrow(() -> new RuntimeException("Order not found"));
         order.setStatus(Status.CANCELED);
         order.setShippedAt(null);
         orderRepository.save(order);
         List<StockUpdateRequest> requests = order.getOrderDetailList().stream()
-                        .map(item -> new StockUpdateRequest(item.getSkuCode(), item.getQuantity()))
-                        .collect(Collectors.toList());
+                .map(item -> new StockUpdateRequest(item.getSkuCode(), item.getQuantity()))
+                .collect(Collectors.toList());
 
         inventoryClient.updateStockQuantity(requests, true);
+        return ApiResponse.builder()
+                .code(StatusCode.SUCCESS.getCode())
+                .message("Order canceled successfully")
+                .data(null)
+                .build();
     }
 
     @Override
-    public List<OrderDTO> getOrderHistoryByUser(String userId){
-        return orderRepository.findByUserId(userId).stream()
-                .map(order -> orderMapper.toDTO(order))
-                .collect(Collectors.toList());
+    public ApiResponse<Object> getOrderHistoryByUser(String userId, Pageable pageable) {
+        Page<OrderDTO> orderList = orderRepository.findByUserId(userId, pageable).map(orderMapper::toDTO);
+        if (orderList.isEmpty()) {
+            return ApiResponse.builder()
+                    .code(StatusCode.DATA_NOT_EXISTED.getCode())
+                    .message("No orders found for user: " + userId)
+                    .data(null)
+                    .build();
+        }
+        return ApiResponse.builder()
+                .code(StatusCode.SUCCESS.getCode())
+                .message(StatusCode.SUCCESS.getMessage())
+                .data(new PageResponse<>(orderList.getContent(), orderList.getTotalPages(), orderList.getTotalElements()))
+                .build();
     }
 
     @Override
-    public OrderDTO getOrderDetails(String orderId){
-        return orderRepository.findById(orderId).map(orderMapper::toDTO)
-                .orElseThrow(()->new RuntimeException("Order not found" + orderId));
+    public ApiResponse<Object> getOrderDetails(String orderId) {
+        return ApiResponse.builder()
+                .code(StatusCode.SUCCESS.getCode())
+                .message(StatusCode.SUCCESS.getMessage())
+                .data(orderRepository.findById(orderId).map(orderMapper::toDTO))
+                .build();
     }
 
     @Override
-    public List<OrderDTO> getAllOrders(){
-        return orderRepository.findAll().stream()
-                .map(orderMapper::toDTO)
-                .collect(Collectors.toList());
+    public ApiResponse<Object> getAllOrders(Pageable pageable) {
+        Page<OrderDTO> orderDTOList = orderRepository.findAll(pageable).map(orderMapper::toDTO);
+        return ApiResponse.builder()
+                .code(StatusCode.SUCCESS.getCode())
+                .message(StatusCode.SUCCESS.getMessage())
+                .data(new PageResponse<>(orderDTOList.getContent(), orderDTOList.getTotalPages(), orderDTOList.getTotalElements()))
+                .build();
     }
 
     @Override
     @Transactional
-    public void updateOrderStatus(String orderId, String status){
+    public void updateOrderStatus(String orderId, String status) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Order not found with id: " + orderId));
 
@@ -122,5 +161,16 @@ public class OrderServiceImpl implements OrderService {
         }
 
         orderRepository.save(order);
+    }
+
+    @Override
+    public ApiResponse<Object> getListOrder(Pageable pageable) {
+        Page<OrderDTO> orders = orderRepository.findAll(pageable).map(orderMapper::toDTO);
+        return ApiResponse.builder()
+                .code(StatusCode.SUCCESS.getCode())
+                .message(StatusCode.SUCCESS.getMessage())
+                .data(new PageResponse<>(orders.getContent(), orders.getTotalPages(), orders.getTotalElements()))
+                .build();
+
     }
 }

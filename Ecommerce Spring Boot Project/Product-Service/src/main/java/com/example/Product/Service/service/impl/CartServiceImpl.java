@@ -1,6 +1,5 @@
 package com.example.Product.Service.service.impl;
 
-import com.example.Product.Service.client.UserClient;
 import com.example.Product.Service.dto.response.CartDTO;
 import com.example.Product.Service.dto.response.CartItemDTO;
 import com.example.Product.Service.entity.Cart;
